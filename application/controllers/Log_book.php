@@ -1,0 +1,156 @@
+<?php
+
+if (!defined('BASEPATH'))
+    exit('No direct script access allowed');
+
+class Log_book extends CI_Controller
+{
+    function __construct()
+    {
+        parent::__construct();
+
+        $this->load->model('Log_book_model');
+        $this->load->library('form_validation');
+
+        if(!$this->session->userdata('logined') || $this->session->userdata('logined') != true)
+        {
+            redirect('/');
+        }        
+	$this->load->library('datatables');
+    }
+
+    public function index()
+    {
+        $this->load->view('log_book/log_book_list');
+    } 
+    
+    public function json() {
+        header('Content-Type: application/json');
+        echo $this->Log_book_model->json();
+    }
+
+    public function read($id) 
+    {
+        $row = $this->Log_book_model->get_by_id($id);
+        if ($row) {
+            $data = array(
+		'id_log_book' => $row->id_log_book,
+		'penjadwalan' => $row->penjadwalan,
+		'mahasiswa' => $row->mahasiswa,
+		'keterangan' => $row->keterangan,
+		'kondisi' => $row->kondisi,
+	    );
+            $this->load->view('log_book/log_book_read', $data);
+        } else {
+            $this->session->set_flashdata('message', 'Record Not Found');
+            redirect(site_url('log_book'));
+        }
+    }
+
+    public function create() 
+    {
+        $data = array(
+            'button' => 'Create',
+            'action' => site_url('log_book/create_action'),
+	    'id_log_book' => set_value('id_log_book'),
+	    'penjadwalan' => set_value('penjadwalan'),
+	    'mahasiswa' => set_value('mahasiswa'),
+	    'keterangan' => set_value('keterangan'),
+	    'kondisi' => set_value('kondisi'),
+	);
+        $this->load->view('log_book/log_book_form', $data);
+    }
+    
+    public function create_action() 
+    {
+        $this->_rules();
+
+        if ($this->form_validation->run() == FALSE) {
+            $this->create();
+        } else {
+            $data = array(
+		'penjadwalan' => $this->input->post('penjadwalan',TRUE),
+		'mahasiswa' => $this->input->post('mahasiswa',TRUE),
+		'keterangan' => $this->input->post('keterangan',TRUE),
+		'kondisi' => $this->input->post('kondisi',TRUE),
+	    );
+
+            $this->Log_book_model->insert($data);
+            $this->session->set_flashdata('message', 'Create Record Success');
+            redirect(site_url('log_book'));
+        }
+    }
+    
+    public function update($id) 
+    {
+        $row = $this->Log_book_model->get_by_id($id);
+
+        if ($row) {
+            $data = array(
+                'button' => 'Update',
+                'action' => site_url('log_book/update_action'),
+		'id_log_book' => set_value('id_log_book', $row->id_log_book),
+		'penjadwalan' => set_value('penjadwalan', $row->penjadwalan),
+		'mahasiswa' => set_value('mahasiswa', $row->mahasiswa),
+		'keterangan' => set_value('keterangan', $row->keterangan),
+		'kondisi' => set_value('kondisi', $row->kondisi),
+	    );
+            $this->load->view('log_book/log_book_form', $data);
+        } else {
+            $this->session->set_flashdata('message', 'Record Not Found');
+            redirect(site_url('log_book'));
+        }
+    }
+    
+    public function update_action() 
+    {
+        $this->_rules();
+
+        if ($this->form_validation->run() == FALSE) {
+            $this->update($this->input->post('id_log_book', TRUE));
+        } else {
+            $data = array(
+		'penjadwalan' => $this->input->post('penjadwalan',TRUE),
+		'mahasiswa' => $this->input->post('mahasiswa',TRUE),
+		'keterangan' => $this->input->post('keterangan',TRUE),
+		'kondisi' => $this->input->post('kondisi',TRUE),
+	    );
+
+            $this->Log_book_model->update($this->input->post('id_log_book', TRUE), $data);
+            $this->session->set_flashdata('message', 'Update Record Success');
+            redirect(site_url('log_book'));
+        }
+    }
+    
+    public function delete($id) 
+    {
+        $row = $this->Log_book_model->get_by_id($id);
+
+        if ($row) {
+            $this->Log_book_model->delete($id);
+            $this->session->set_flashdata('message', 'Delete Record Success');
+            redirect(site_url('log_book'));
+        } else {
+            $this->session->set_flashdata('message', 'Record Not Found');
+            redirect(site_url('log_book'));
+        }
+    }
+
+    public function _rules() 
+    {
+	$this->form_validation->set_rules('penjadwalan', 'penjadwalan', 'trim|required');
+	$this->form_validation->set_rules('mahasiswa', 'mahasiswa', 'trim|required');
+	$this->form_validation->set_rules('keterangan', 'keterangan', 'trim|required');
+	$this->form_validation->set_rules('kondisi', 'kondisi', 'trim|required');
+
+	$this->form_validation->set_rules('id_log_book', 'id_log_book', 'trim');
+	$this->form_validation->set_error_delimiters('<span class="text-danger">', '</span>');
+    }
+
+}
+
+/* End of file Log_book.php */
+/* Location: ./application/controllers/Log_book.php */
+/* Please DO NOT modify this information : */
+/* Generated by Harviacode Codeigniter CRUD Generator 2020-02-29 11:03:23 */
+/* http://harviacode.com */
